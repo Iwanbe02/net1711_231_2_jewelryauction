@@ -1,0 +1,514 @@
+﻿
+@using JewelryAuctionData.Paginate
+@model PagedResult<JewelryAuctionData.Models.AuctionResult>
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Auction Result</h1>
+
+<div class="col-md-10">
+    <h3 class="display-8">Auction Result List</h3>
+</div>
+
+<div class="row">
+    <div class="col-md-2">
+        <div>
+            <input type="text" id="searchInputName" placeholder="Search by Jewelry Name" title="Type in a name">
+        </div>
+
+    </div>
+    <div class="col-md-2">
+        <div>
+            <input type="text" id="searchInputMaterial" placeholder="Search by Customer Name" title="Type in a name">
+        </div>
+
+    </div>
+    <div class="col-md-2">
+        <div>
+            <input type="text" id="searchInputType" placeholder="Search by Price" title="Type in a name">
+        </div>
+
+    </div>
+
+    <div class="col-md-3">
+        <button type="button" class="btn btn-primary" onclick="search()">
+            Search
+        </button>
+    </div>
+    <div class="col-md-2 text-end">
+        <button type="button" class="btn btn-primary" onclick="add();">
+            Add
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <tr class="card-header">
+                    <th class="card-title text-center">AuctionResultId</th>
+                    <th class="card-title text-center">Date</th>
+                    <th class="card-title text-center">Status</th>
+                    <th class="card-title text-center">Price</th>
+                    <th class="card-title text-center">CustomerId</th>
+                    <th class="card-title text-center">JoinAuctionId</th>
+                    <th class="card-title text-center">Detail</th>
+                    <th class="card-title text-center">Description</th>
+                    <th class="card-title text-center">StartingPrice</th>
+                    <th class="card-title text-center">JewelryId</th>
+                    <th class="card-title text-center">BidId</th>
+                    <th class="card-title text-center"></th>
+                    <th class="card-title text-center"></th>
+                    <th class="card-title text-center"></th>
+                </tr>
+            </thead>
+            <tbody class="tblAuctionResultList">
+            </tbody>
+        </table>
+
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = 1, pageSize = Model.PageSize })" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = Model.CurrentPage - 1, pageSize = Model.PageSize })" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { pageNumber = i, pageSize = Model.PageSize })">@i</a>
+                    </li>
+                }
+                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = Model.CurrentPage + 1, pageSize = Model.PageSize })" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = Model.TotalPages, pageSize = Model.PageSize })" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="page-search">
+                <input type="number" id="pageNumberInput" min="1" placeholder="Go to page..." />
+                <button type="button" onclick="goToPage()">Go</button>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<div class="modal fade" id="auctionResultModal" tabindex="-1" aria-labelledby="auctionResultModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm(null, null, FormMethod.Post, new { name = "frm", id = "frm" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="auctionResultModalLabel">Auction Results</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="auctionResultId" name="auctionResultId">
+                    
+                    <div class="form-group">
+                        <label for="date">Date:</label>
+                        <input type="datetime-local" class="form-control" id="date" name="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status:</label>
+                        <input type="text" class="form-control" id="status" name="status" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="price">Price:</label>
+                        <input type="number" class="form-control" id="price" name="price" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerId">Customer ID:</label>
+                        <input type="number" class="form-control" id="customerId" name="customerId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="joinAuctionId">Join Auction ID:</label>
+                        <input type="number" class="form-control" id="joinAuctionId" name="joinAuctionId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="detail">Detail:</label>
+                        <input type="text" class="form-control" id="detail" name="detail" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <input type="text" class="form-control" id="description" name="description" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="startingPrice">Starting Price:</label>
+                        <input type="number" class="form-control" id="startingPrice" name="startingPrice" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="jewelryId">Jewelry ID:</label>
+                        <input type="number" class="form-control" id="jewelryId" name="jewelryId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="bidId">Bid ID:</label>
+                        <input type="number" class="form-control" id="bidId" name="bidId" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btSave" type="button" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+
+
+@section scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            loadData();
+            $("#btSave").click(function () {
+                var auctionResultId = $("#auctionResultId").val();
+                var auctionResultData = {
+                    date: $("#date").val(),
+                    status: $("#status").val(),
+                    price: $("#price").val(),
+                    customerId: $("#customerId").val(),
+                    joinAuctionId: $("#joinAuctionId").val(),
+                    detail: $("#detail").val(),
+                    description: $("#description").val(),
+                    startingPrice: $("#startingPrice").val(),
+                    jewelryId: $("#jewelryId").val(),
+                    bidId: $("#bidId").val(),
+                };
+                if (auctionResultId) {
+                    auctionResultData.auctionResultId = auctionResultId;
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Update", "AuctionResult")',
+                        contentType: 'application/json',
+                        data: JSON.stringify(auctionResultData),
+                        success: function (result) {
+                            if (result.status === 1) {
+                                $('#auctionResultModal').modal('hide');
+                                loadData();
+                            }
+                            alert(result.message);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("An error occurred while updating the Auction Result:", error);
+                            alert("An error occurred while updating the Auction Result.");
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Create", "AuctionResult")',
+                        contentType: 'application/json',
+                        data: JSON.stringify(auctionResultData),
+                        success: function (result) {
+                            if (result.status === 1) {
+                                $('#auctionResultModal').modal('hide');
+                                loadData();
+                            }
+                            alert(result.message);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("An error occurred while saving the Auction Result:", error);
+                            alert("An error occurred while saving the Auction Result.");
+                        }
+                    });
+                }
+            });
+        });
+
+        function search() {
+
+            var tmp1 = $('#searchInputName').val().trim();
+
+
+            var tmp2 = $('#searchInputMaterial').val().trim();
+
+
+            var tmp3 = $('#searchInputType').val().trim();
+
+            var search1 = "###";
+            var search2 = "###";
+            var search3 = "###";
+
+            if (tmp1 !== '') {
+                search1 = tmp1;
+            }
+            if (tmp2 !== '') {
+                search2 = tmp2;
+            }
+            if (tmp3 !== '') {
+                search3 = tmp3;
+            }
+
+            if (tmp1 === '' && tmp2 === '' && tmp3 === '') {
+                loadData();
+            } else {
+                $.ajax({
+                    url: '@Url.Action("Search", "AuctionResult")',
+                    type: "GET",
+                    data: {
+
+                        search1,
+                        search2,
+                        search3
+
+
+                    },
+                    contentType: "application/json;charset=utf-8",
+                    dataType: "json",
+                    success: function (result) {
+                        var html = '';
+                        $.each(result, function (key, item) {
+                            html += '<tr>';
+                            html += '<td>' + item.auctionResultId + '</td>';
+                            html += '<td>' + item.date + '</td>';
+                            html += '<td>' + item.status + '</td>';
+                            html += '<td>' + item.price + '</td>';
+                            html += '<td>' + item.customerId + '</td>';
+                            html += '<td>' + item.joinAuctionId + '</td>';
+                            html += '<td>' + item.detail + '</td>';
+                            html += '<td>' + item.description + '</td>';
+                            html += '<td>' + item.startingPrice + '</td>';
+                            html += '<td>' + item.jewelryId + '</td>';
+                            html += '<td>' + item.bidId + '</td>';
+                            html += '<td><button type="button" class="btn btn-primary" onclick="detailsAuctionResult(' + item.auctionResultId + ')">Detail</button></td>';
+                            html += '<td><button type="button" class="btn btn-primary" onclick="edit(' + item.auctionResultId + ')">Edit</button></td>';
+                            html += '<td><button type="button" class="btn btn-danger" onclick="deleteAuctionResult(' + item.auctionResultId + ')">Delete</button></td>';
+                            html += '</tr>';
+                        });
+                        $('.tblAuctionResultList').html(html);
+                    },
+                    error: function (xhr, error) {
+                        alert(xhr.statusText);
+                    }
+                });
+            }
+        }
+
+        /*
+        function loadData() {
+            $.ajax({
+                url: '@Url.Action("GetAll", "AuctionResult")',
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    var html = '';
+                    $.each(result, function (key, item) {
+                        html += '<tr>';
+                        html += '<td>' + item.auctionResultId + '</td>';
+                        html += '<td>' + item.date + '</td>';
+                        html += '<td>' + item.status + '</td>';
+                        html += '<td>' + item.price + '</td>';
+                        html += '<td>' + item.customerId + '</td>';
+                        html += '<td>' + item.joinAuctionId + '</td>';
+                        html += '<td>' + item.detail + '</td>';
+                        html += '<td>' + item.description + '</td>';
+                        html += '<td>' + item.startingPrice + '</td>';
+                        html += '<td>' + item.jewelryId + '</td>';
+                        html += '<td>' + item.bidId + '</td>';
+                        html += '<td><button type="button" class="btn btn-primary" onclick="detailsAuctionResult(' + item.auctionResultId + ')">Detail</button></td>';
+                        html += '<td><button type="button" class="btn btn-primary" onclick="edit(' + item.auctionResultId + ')">Edit</button></td>';
+                        html += '<td><button type="button" class="btn btn-danger" onclick="deleteAuctionResult(' + item.auctionResultId + ')">Delete</button></td>';
+                        html += '</tr>';
+                    });
+                    $('.tblAuctionResultList').html(html);
+                },
+                error: function (xhr, error) {
+                    alert(xhr.statusText);
+                }
+            });
+        }
+        */
+
+        var totalPages;
+
+        function loadData(pageNumber = 1, pageSize = 3) {
+            $.ajax({
+                url: '@Url.Action("GetPaged", "AuctionResult")',
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                data: {
+                    pageNumber: pageNumber,
+                    pageSize: pageSize
+                },
+                success: function (result) {
+                    var html = '';
+                    //Update totalPages
+                    totalPages = result.totalPages;
+
+                    $.each(result.data, function (key, item) {
+                        html += '<tr>';
+                        html += '<td>' + item.auctionResultId + '</td>';
+                        html += '<td>' + item.date + '</td>';
+                        html += '<td>' + item.status + '</td>';
+                        html += '<td>' + item.price + '</td>';
+                        html += '<td>' + item.customerId + '</td>';
+                        html += '<td>' + item.joinAuctionId + '</td>';
+                        html += '<td>' + item.detail + '</td>';
+                        html += '<td>' + item.description + '</td>';
+                        html += '<td>' + item.startingPrice + '</td>';
+                        html += '<td>' + item.jewelryId + '</td>';
+                        html += '<td>' + item.bidId + '</td>';
+                        html += '<td><button type="button" class="btn btn-primary" onclick="detailsAuctionResult(' + item.auctionResultId + ')">Detail</button></td>';
+                        html += '<td><button type="button" class="btn btn-primary" onclick="edit(' + item.auctionResultId + ')">Edit</button></td>';
+                        html += '<td><button type="button" class="btn btn-danger" onclick="deleteAuctionResult(' + item.auctionResultId + ')">Delete</button></td>';
+                        html += '</tr>';
+                    });
+                    $('.tblAuctionResultList').html(html);
+
+                    // Update pagination
+                    var paginationHtml = '';
+                    if (result.currentPage > 1) {
+                        paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(1,' + result.pageSize + ')">&laquo;&laquo;</a></li>';
+                        paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(' + (result.currentPage - 1) + ',' + result.pageSize + ')">&laquo;</a></li>';
+                    }
+
+                    // Show the first page
+                    paginationHtml += '<li class="page-item ' + (result.currentPage == 1 ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(1,' + result.pageSize + ')">1</a></li>';
+
+                    if (result.totalPages > 1) {
+                        if (result.totalPages <= 3) {
+                            // Show all pages if total pages <= 3
+                            for (var i = 2; i <= result.totalPages; i++) {
+                                paginationHtml += '<li class="page-item ' + (result.currentPage == i ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(' + i + ',' + result.pageSize + ')">' + i + '</a></li>';
+                            }
+                        } else {
+                            // Show the first three pages and ellipsis if total pages > 3
+                            paginationHtml += '<li class="page-item ' + (result.currentPage == 2 ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(2,' + result.pageSize + ')">2</a></li>';
+                            paginationHtml += '<li class="page-item ' + (result.currentPage == 3 ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(3,' + result.pageSize + ')">3</a></li>';
+
+                            // Logic to display ellipsis and current page in the middle
+                            if (result.currentPage > 3 && result.currentPage < result.totalPages - 2) {
+                                paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                                paginationHtml += '<li class="page-item active"><a class="page-link" href="#">' + result.currentPage + '</a></li>';
+                                paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                            } else if (result.currentPage >= result.totalPages - 2) {
+                                paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                                for (var i = result.totalPages - 2; i < result.totalPages; i++) {
+                                    paginationHtml += '<li class="page-item ' + (result.currentPage == i ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(' + i + ',' + result.pageSize + ')">' + i + '</a></li>';
+                                }
+                            } else if (result.totalPages > 3) {
+                                paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                            }
+
+                            // Always show last page if total number of pages > 3
+                            if (result.totalPages > 3) {
+                                paginationHtml += '<li class="page-item ' + (result.currentPage == result.totalPages ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(' + result.totalPages + ',' + result.pageSize + ')">' + result.totalPages + '</a></li>';
+                            }
+                        }
+                    }
+
+                    if (result.currentPage < result.totalPages) {
+                        paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(' + (result.currentPage + 1) + ',' + result.pageSize + ')">&raquo;</a></li>';
+                        paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(' + result.totalPages + ',' + result.pageSize + ')">&raquo;&raquo;</a></li>';
+                    }
+
+                    $('.pagination').html(paginationHtml);
+                },
+                error: function (xhr, error) {
+                    alert(xhr.statusText);
+                }
+            });
+        }
+
+        function goToPage() {
+            var pageNumber = parseInt($('#pageNumberInput').val());
+            var pageSize = 3;
+            if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > totalPages) {
+                alert('Please enter a valid page number.');
+            } else {
+                loadData(pageNumber, pageSize);
+            }
+        }
+
+        function add() {
+            $("#auctionResultModalContent").html("");
+            $("#auctionResultModalLabel").html("Add New Auction Result");
+            // Clear form fields
+            $('#auctionResultId').val('');
+            $('#status').val('');
+            $('#bidId').val('');
+            $('#date').val('');
+            $('#status').val('');
+            $('#price').val('');
+            $('#description').val('');
+            $('#jewelryId').val('');
+            $('#customerId').val('');
+            $('#startingPrice').val('');
+            $('#joinAuctionId').val('');
+            $('#auctionResultModal').modal('show');
+        }
+
+        function edit(auctionResultId) {
+            $.ajax({
+                url: '@Url.Action("GetAuctionResultById", "AuctionResult")' + '?auctionResultId=' + auctionResultId,
+                type: "GET",
+                contentType: 'application/json',
+                success: function (result) {
+                    $('#auctionResultId').val(result.auctionResultId);
+                    $('#date').val(result.date);
+                    $('#status').val(result.status);
+                    $('#price').val(result.price);
+                    $('#customerId').val(result.customerId);
+                    $('#joinAuctionId').val(result.joinAuctionId);
+                    $('#detail').val(result.detail);
+                    $('#description').val(result.description);
+                    $('#startingPrice').val(result.startingPrice);
+                    $('#jewelryId').val(result.jewelryId);
+                    $('#bidId').val(result.bidId);
+                    $('#auctionResultModalLabel').html('Edit AuctionResult');
+                    $('#auctionResultModal').modal('show');
+                },
+                error: function (xhr, status, error) {
+                    console.error("An error occurred while fetching Auction Result details:", error);
+                    alert("An error occurred while fetching Auction Result details.");
+                }
+            });
+        }
+
+        function detailsAuctionResult(auctionResultId) {
+            window.location.href = '@Url.Action("Details", "AuctionResult")' + '?auctionResultId=' + auctionResultId;
+        }
+       
+        function formatDateTime(dateTime) {
+            if (!dateTime) return '';
+            return new Date(dateTime).toLocaleString();
+        }
+
+
+        function deleteAuctionResult(auctionResultId) {
+            if (confirm('Are you sure you want to delete this Auction Result?')) {
+                $.ajax({
+                    type: 'DELETE',
+                    url: '@Url.Action("Delete", "AuctionResult")' + '?auctionResultId=' + auctionResultId,
+                    contentType: 'application/json',
+                    success: function (result) {
+                        if (result.status === 1) {
+                            loadData();
+                        }
+                        alert(result.message);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("An error occurred while deleting the Auction Result:", error);
+                        alert("An error occurred while deleting the Auction Result.");
+                    }
+                });
+            }
+        }
+    </script>
+}

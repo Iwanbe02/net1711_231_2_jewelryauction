@@ -1,0 +1,424 @@
+﻿@using JewelryAuctionData.Paginate
+@model PagedResult<JewelryAuctionData.Models.Customer>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+<div class="col-md-10">
+    <h3 class="display-8">Customer List</h3>
+</div>
+
+<div class="row">
+    <div class="col-md-2 text-start">
+        <input type="text" id="searchInput" placeholder="Search customer info" title="Type in a name" style="margin-right: 5px;">
+    </div>
+    <div class="col-md-2 text-start">
+        <button type="button" class="btn btn-primary" onclick="search()">
+            Search
+        </button>
+    </div>
+    <div class="col-md-6"></div> <!-- Tao khoang trong -->
+    <div class="col-md-2 text-end">
+        <button type="button" class="btn btn-primary" onclick="add()">
+            Create
+        </button>
+    </div>
+
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <tr class="card-header">
+                    <th class="card-title text-center">CustomerId</th>
+                    <th class="card-title text-center">Name</th>
+                    <th class="card-title text-center">Address</th>
+                    <th class="card-title text-center">Phone</th>
+                    <th class="card-title text-center">Email</th>
+                    <th class="card-title text-center">Gender</th>
+                    <th class="card-title text-center">DoB</th>
+                    <th class="card-title text-center">Ocupation</th>
+                    <th class="card-title text-center">Nationality</th>
+                    <th class="card-title text-center">Password</th>
+                    <th class="card-title text-center"></th>
+                    <th class="card-title text-center"></th>
+                    <th class="card-title text-center"></th>
+                </tr>
+            </thead>
+            <tbody class="tblCustomerList">
+            </tbody>
+        </table>
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = 1, pageSize = Model.PageSize })" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = Model.CurrentPage - 1, pageSize = Model.PageSize })" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { pageNumber = i, pageSize = Model.PageSize })">@i</a>
+                    </li>
+                }
+                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = Model.CurrentPage + 1, pageSize = Model.PageSize })" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = Model.TotalPages, pageSize = Model.PageSize })" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="page-search">
+                <input type="number" id="pageNumberInput" min="1" placeholder="Go to page..." />
+                <button type="button" onclick="goToPage()">Go</button>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<div class="modal fade" id="customerModal" tabindex="-1" aria-labelledby="customerModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm(null, null, FormMethod.Post, new { name = "frm", id = "frm" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="customerModalLabel">Customers</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="customerId" name="customerId">
+                    <div class="form-group">
+                        <label for="customerName">Customer Name:</label>
+                        <input type="text" class="form-control" id="customerName" name="customerName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="address">Address:</label>
+                        <input type="text" class="form-control" id="address" name="address" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone:</label>
+                        <input type="text" class="form-control" id="phone" name="phone" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email:</label>
+                        <input type="text" class="form-control" id="email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Gender:</label>
+                        
+                        <input type="text" class="form-control" id="gender" name="gender" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="dob">DoB:</label>
+                        <input type="datetime-local" class="form-control" id="dob" name="dob" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ocupation">Ocupation:</label>
+                        <input type="text" class="form-control" id="ocupation" name="ocupation" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="nationality">Nationality:</label>
+                        <input type="text" class="form-control" id="nationality" name="nationality" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <input type="text" class="form-control" id="password" name="password" required>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button id="btSave" type="button" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+    <script type="text/javascript">
+        $(document).ready(function () {
+            loadData();
+            $("#btSave").click(function () {
+                var customerId = $("#customerId").val();
+                var customerData = {
+                    customerName: $("#customerName").val(),
+                    address: $("#address").val(),
+                    phone: $("#phone").val(),
+                    email: $("#email").val(),
+                    gender: $("#gender").val(),
+                    doB: $("#doB").val(),
+                    ocupation: $("#ocupation").val(),
+                    nationality: $("#nationality").val(),
+                    password: $("#password").val(),
+                };
+                if (customerId) {
+                    customerData.customerId = customerId;
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Update", "Customers")',
+                        contentType: 'application/json',
+                        data: JSON.stringify(customerData),
+                        success: function (result) {
+                            if (result.status === 1) {
+                                $('#customerModal').modal('hide');
+                                loadData();
+                            }
+                            alert(result.message);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("An error occurred while updating the Customer:", error);
+                            alert("An error occurred while updating the Customer.");
+                        }
+                    });
+                } else {
+                    $.ajax({
+                        type: 'POST',
+                        url: '@Url.Action("Create", "Customers")',
+                        contentType: 'application/json',
+                        data: JSON.stringify(customerData),
+                        success: function (result) {
+                            if (result.status === 1) {
+                                $('#customerModal').modal('hide');
+                                loadData();
+                            }
+                            alert(result.message);
+                        },
+                        error: function (xhr, status, error) {
+                            console.error("An error occurred while saving the Customer:", error);
+                            alert("An error occurred while saving the Customer.");
+                        }
+                    });
+                }
+            });
+        });
+
+            function search() {
+                var searchInput = $('#searchInput').val().trim();
+                if (searchInput === '') {
+                    loadData();
+                } else {
+                    $.ajax({
+                        url: '@Url.Action("Search", "Customers")',
+                        type: "GET",
+                        data: { search: searchInput },
+                        contentType: "application/json;charset=utf-8",
+                        dataType: "json",
+                        success: function (result) {
+                            var html = '';
+                            $.each(result, function (key, item) {
+                                html += '<tr>';
+                                html += '<td>' + item.customerId + '</td>';
+                                html += '<td>' + item.customerName + '</td>';
+                                html += '<td>' + item.address + '</td>';
+                                html += '<td>' + item.phone + '</td>';
+                                html += '<td>' + item.email + '</td>';
+                                html += '<td>' + item.gender + '</td>';
+                                html += '<td>' + item.doB + '</td>';
+                                html += '<td>' + item.ocupation + '</td>';
+                                html += '<td>' + item.nationality + '</td>';
+                                html += '<td>' + item.password + '</td>';
+                                html += '<td><button type="button" class="btn btn-primary" onclick="edit(' + item.customerId + ')">Edit</button></td>';
+                                html += '<td><button type="button" class="btn btn-primary" onclick="detailsCustomer(' + item.customerId + ')">Details</button></td>';
+                                html += '<td><button type="button" class="btn btn-primary" onclick="detailsCustomer(' + item.customerId + ')">Details</button></td>';html += '<td><button type="button" class="btn btn-danger" onclick="deleteCustomer(' + item.customerId + ')">Delete</button></td>';
+                                html += '</tr>';
+                            });
+                            $('.tblCustomerList').html(html);
+                        },
+                        error: function (xhr, error) {
+                            alert(xhr.statusText);
+                        }
+                    });
+                }
+            }
+        function getParameterByName(name) {
+            name = name.replace(/[\[]/, "\\[").replace(/[\]]/, "\\]");
+            var regex = new RegExp("[\\?&]" + name + "=([^&#]*)"),
+                results = regex.exec(location.search);
+            return results === null ? "" : decodeURIComponent(results[1].replace(/\+/g, " "));
+        }
+        var totalPages;
+
+        function loadData(pageNumber = 1, pageSize = 5) {
+            var url = '@Url.Action("GetPaged", "Customers")';
+            var isPaginated = true;
+            $.ajax({
+                url: url,
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                data: isPaginated ? { pageNumber: pageNumber, pageSize: pageSize } : {},
+                success: function (result) {
+                    var html = '';
+                    if (isPaginated) {
+                        totalPages = result.totalPages;
+                    }
+                    $.each(isPaginated ? result.data : result, function (key, item) {
+                     
+                        html += '<tr>';
+                        html += '<td>' + item.customerId + '</td>';
+                        html += '<td>' + item.customerName + '</td>';
+                        html += '<td>' + item.address + '</td>';
+                        html += '<td>' + item.phone + '</td>';
+                        html += '<td>' + item.email + '</td>';
+                        html += '<td>' + item.gender + '</td>';
+                        html += '<td>' + item.doB + '</td>';
+                        html += '<td>' + item.ocupation + '</td>';
+                        html += '<td>' + item.nationality + '</td>';
+                        html += '<td>' + item.password + '</td>';
+                        html += '<td><button type="button" class="btn btn-primary" onclick="edit(' + item.customerId + ')">Edit</button></td>';
+                        html += '<td><button type="button" class="btn btn-danger" onclick="deleteCustomer(' + item.customerId + ')">Delete</button></td>';
+                        html += '<td><button type="button" class="btn btn-primary" onclick="detailsCustomer(' + item.customerId + ')">Details</button></td>';
+                        html += '</tr>';
+                    });
+                    $('.tblCustomerList').html(html);
+                    if (isPaginated) {
+                        // Update pagination
+                        var paginationHtml = '';
+                        if (result.currentPage > 1) {
+                            paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(1,' + result.pageSize + ')">&laquo;&laquo;</a></li>';
+                            paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(' + (result.currentPage - 1) + ',' + result.pageSize + ')">&laquo;</a></li>';
+                        }
+
+                        // Show the first page
+                        paginationHtml += '<li class="page-item ' + (result.currentPage == 1 ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(1,' + result.pageSize + ')">1</a></li>';
+
+                        if (result.totalPages > 1) {
+                            if (result.totalPages <= 3) {
+                                // Show all pages if total pages <= 3
+                                for (var i = 2; i <= result.totalPages; i++) {
+                                    paginationHtml += '<li class="page-item ' + (result.currentPage == i ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(' + i + ',' + result.pageSize + ')">' + i + '</a></li>';
+                                }
+                            } else {
+                                // Show the first three pages and ellipsis if total pages > 3
+                                paginationHtml += '<li class="page-item ' + (result.currentPage == 2 ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(2,' + result.pageSize + ')">2</a></li>';
+                                paginationHtml += '<li class="page-item ' + (result.currentPage == 3 ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(3,' + result.pageSize + ')">3</a></li>';
+
+                                // Logic to display ellipsis and current page in the middle
+                                if (result.currentPage > 3 && result.currentPage < result.totalPages - 2) {
+                                    paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                                    paginationHtml += '<li class="page-item active"><a class="page-link" href="#">' + result.currentPage + '</a></li>';
+                                    paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                                } else if (result.currentPage >= result.totalPages - 2) {
+                                    paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                                    for (var i = result.totalPages - 2; i < result.totalPages; i++) {
+                                        paginationHtml += '<li class="page-item ' + (result.currentPage == i ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(' + i + ',' + result.pageSize + ')">' + i + '</a></li>';
+                                    }
+                                } else if (result.totalPages > 3) {
+                                    paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                                }
+
+                                // // Always show last page if total number of pages > 3
+                                if (result.totalPages > 3) {
+                                    paginationHtml += '<li class="page-item ' + (result.currentPage == result.totalPages ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(' + result.totalPages + ',' + result.pageSize + ')">' + result.totalPages + '</a></li>';
+                                }
+                            }
+                        }
+
+                        if (result.currentPage < result.totalPages) {
+                            paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(' + (result.currentPage + 1) + ',' + result.pageSize + ')">&raquo;</a></li>';
+                            paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(' + result.totalPages + ',' + result.pageSize + ')">&raquo;&raquo;</a></li>';
+                        }
+
+                        $('.pagination').html(paginationHtml);
+                    } else {
+                        $('.pagination').html('');
+                    }
+                },
+                error: function (xhr, error) {
+                    alert(xhr.statusText);
+                }
+            });
+        }
+
+        function goToPage() {
+            var pageNumber = parseInt($('#pageNumberInput').val());
+            var pageSize = 3;
+            if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > totalPages) {
+                alert('Please enter a valid page number.');
+            } else {
+                loadData(pageNumber, pageSize);
+            }
+        }
+
+        function add() {
+            $("#customerModalContent").html("");
+            $("#customerModalLabel").html("Add New");
+            // Clear form fields
+            $('#customerId').val('');
+            $('#customerName').val('');
+            $('#address').val('');
+            $('#phone').val('');
+            $('#email').val('');
+            $('#gender').val('');
+            $('#doB').val('');
+            $('#ocupation').val('');
+            $('#nationality').val('');
+            $('#password').val('');
+            $('#customerModal').modal('show');
+        }
+
+
+        function edit(customerId) {
+            $.ajax({
+                url: '@Url.Action("GetCustomerById", "Customers")' + '?customerId=' + customerId,
+                type: "GET",
+                contentType: 'application/json',
+                success: function (result) {
+                    $('#customerId').val(result.customerId);
+                    $('#customerName').val(result.customerName);
+                    $('#address').val(result.address);
+                    $('#phone').val(result.phone);
+                    $('#email').val(result.email);
+                    $('#gender').val(result.gender);
+                    $('#doB').val(result.gender);
+                    $('#ocupation').val(result.gender);
+                    $('#nationality').val(result.gender);
+                    $('#password').val(result.gender);
+                    $('#customerModalLabel').html('Edit Customer');
+                    $('#customerModal').modal('show');
+                },
+                error: function (xhr, status, error) {
+                    console.error("An error occurred while fetching customer details:", error);
+                    alert("An error occurred while fetching customer details.");
+                }
+            });
+        }
+
+        function deleteCustomer(customerId) {
+            if (confirm('Are you sure you want to delete this customer?')) {
+                $.ajax({
+                    type: 'DELETE',
+                    url: '@Url.Action("Delete", "Customers")' + '?customerId=' + customerId,
+                    contentType: 'application/json',
+                    success: function (result) {
+                        if (result.status === 1) {
+                            loadData();
+                        }
+                        alert(result.message);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("An error occurred while deleting the customer:", error);
+                        alert("An error occurred while deleting the customer.");
+                    }
+                });
+            }
+        }
+        function detailsCustomer(customerId) {
+            window.location.href = '@Url.Action("Details", "Customers")' + '?customerId=' + customerId;
+        }
+    </script>
+}

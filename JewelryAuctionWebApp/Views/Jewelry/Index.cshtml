@@ -1,0 +1,582 @@
+﻿@using JewelryAuctionData.Paginate
+@model PagedResult<JewelryAuctionData.Models.Jewelry>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Jewelry</h1>
+
+<div class="row">
+    <div class="col-md-10">
+        <h3 class="display-8">Jewelry List</h3>
+    </div>
+    
+</div>
+
+<div class="row">
+    <div class="col-md-2">
+        <div></div>
+      </div>
+</div>
+<div class="row">
+    <div class="col-md-2">
+        <div>
+            <input type="text" id="searchInputName" placeholder="Search" title="Type in a name">
+        </div>
+        
+    </div>
+    
+    
+    <div class="col-md-3">
+        <button type="button" class="btn btn-primary" onclick="search()">
+            Search
+        </button>
+    </div>
+    <div class="col-md-3 text-end">
+        <button type="button" class="btn btn-primary" onclick="add();">
+            Add
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12">
+        <table class="table table-striped table-bordered table-hover">
+            <thead>
+                <tr class="card-header">
+                    <th class="card-title text-center">JewelryId</th>
+                    <th class="card-title text-center">JewelryName</th>
+                    <th class="card-title text-center">Material</th>
+                    <th class="card-title text-center">Size</th>
+                    <th class="card-title text-center">Weight</th>
+                    <th class="card-title text-center">CustomerId</th>
+                    <th class="card-title text-center">Type</th>
+                    <th class="card-title text-center">Quantitative</th>
+                    <th class="card-title text-center">Description</th>
+                    <th class="card-title text-center">Status</th>
+                    <th class="card-title text-center">Picture</th>
+                    <th class="card-title text-center"></th>
+                    <th class="card-title text-center"></th>
+                    <th class="card-title text-center"></th>
+                </tr>
+            </thead>
+            <tbody class="tblJewelryList">
+            </tbody>
+        </table>
+
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = 1, pageSize = Model.PageSize })" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = Model.CurrentPage - 1, pageSize = Model.PageSize })" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+                @for (int i = 1; i <= Model.TotalPages; i++)
+                {
+                    <li class="page-item @(Model.CurrentPage == i ? "active" : "")">
+                        <a class="page-link" href="@Url.Action("Index", new { pageNumber = i, pageSize = Model.PageSize })">@i</a>
+                    </li>
+                }
+                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = Model.CurrentPage + 1, pageSize = Model.PageSize })" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                    <a class="page-link" href="@Url.Action("Index", new { pageNumber = Model.TotalPages, pageSize = Model.PageSize })" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            </ul>
+            <div class="page-search">
+                <input type="number" id="pageNumberInput" min="1" placeholder="Go to page..." />
+                <button type="button" onclick="goToPage()">Go</button>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<div class="modal fade" id="topUpModal" tabindex="-1" aria-labelledby="topUpModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm(null, null, FormMethod.Post, new { name = "frm", id = "frm",enctype = "multipart/form-data" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="topUpModalLabel">Add New Jewelry</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="jewelryId" name="jewelryId">
+                   
+                    <div class="form-group">
+                        <label for="jewelryName">Jewelry Name:</label>
+                        <input type="text" class="form-control" id="jewelryName" name="jewelryName" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="material">Material:</label>
+                        <input type="text" class="form-control" id="material" name="material" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="size">Size:</label>
+                        <input type="text" class="form-control" id="size" name="size" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="weight">Weight:</label>
+                        <input type="text" class="form-control" id="weight" name="weight" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerId">Customer ID:</label>
+                        <input type="number" class="form-control" id="customerId" name="customerId" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="type">Type:</label>
+                        <input type="text" class="form-control" id="type" name="type" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantitative">Quantitative:</label>
+                        <input type="text" class="form-control" id="quantitative" name="quantitative" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <input type="text" class="form-control" id="description" name="description" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="status">Status:</label>
+                        <input type="text" class="form-control" id="status" name="status" required>
+                    </div>
+
+                    
+
+                </div>
+                <div class="modal-footer">
+                    <button id="btSave" type="button" class="btn btn-primary">Save</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="topUpModalDetail" tabindex="1" aria-labelledby="topUpModalLabelDetail" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            @using (Html.BeginForm(null, null, FormMethod.Post, new { name = "frm2", id = "frm2", enctype = "multipart/form-data" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="modal-header">
+                    <h5 class="modal-title" id="topUpModalLabel">Jewelry Detail</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">                
+
+                    <div class="form-group">
+                        <label for="jewelryName2">Jewelry Name:</label>
+                        <input type="text" class="form-control" id="jewelryName2" name="jewelryName" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="material2">Material:</label>
+                        <input type="text" class="form-control" id="material2" name="material" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="size2">Size:</label>
+                        <input type="text" class="form-control" id="size2" name="size" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="weight2">Weight:</label>
+                        <input type="text" class="form-control" id="weight2" name="weight" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="customerId2">Customer ID:</label>
+                        <input type="number" class="form-control" id="customerId2" name="customerId" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="type2">Type:</label>
+                        <input type="text" class="form-control" id="type2" name="type" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantitative2">Quantitative:</label>
+                        <input type="text" class="form-control" id="quantitative2" name="quantitative" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="description2">Description:</label>
+                        <input type="text" class="form-control" id="description2" name="description" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="status2">Status:</label>
+                        <input type="text" class="form-control" id="status2" name="status" readonly>
+                    </div>
+
+                    
+
+                </div>
+                <div class="modal-footer">
+                  
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section scripts {
+
+
+    <script type="text/javascript">
+        var action = "Create"; // Mặc định là tạo mới
+
+        $(document).ready(function () {
+
+            loadData();
+
+            /*
+            const pictureData = document.getElementById('pictureData');
+            const previewImage = document.getElementById('previewImage');
+            var tmp;
+
+            pictureData.addEventListener('change', function (e) {
+                const file = e.target.files[0];
+                
+
+                if (file && file.type.startsWith('image/')) {
+                    var reader = new FileReader();
+                    
+                    reader.onload = function (e) {
+                        previewImage.src = e.target.result;
+                        tmp = Convert.FromBase64String(file);
+                        
+                    };
+
+                    reader.readAsDataURL(file);
+                } else {
+                    // Display error message or clear preview if a non-image file is selected
+                    previewImage.src = "";
+                    alert("Please select an image file.");
+                }
+            });
+            */
+
+            $("#btSave").click(function () {
+
+                
+
+                var newJewelry = {
+                    jewelryId: $("#jewelryId").val(),
+                    jewelryName: $("#jewelryName").val(),
+                    material: $("#material").val(),
+                    size: $("#size").val(),
+                    weight: $("#weight").val(),
+                    customerId: $("#customerId").val(),
+                    pictureData: $("#pictureData").val(),
+                    type: $("#type").val(),
+                    quantitative: $("#quantitative").val(),
+                    description: $("#description").val(),
+                    status: $("#status").val(),
+                    
+                    
+                };
+
+                $.ajax({
+                    type: action === "Create" ? 'POST' : 'POST',
+                    url: action === "Create" ? '@Url.Action("Create", "Jewelry")' : '@Url.Action("Update", "Jewelry")',
+                    contentType: 'application/json',
+                    data: JSON.stringify(newJewelry),
+                    success: function (result) {
+                        if (result.status === 1) {
+                            $('#topUpModal').modal('hide');
+                            loadData();
+                        }
+                        alert(result.message);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("An error occurred while saving the Jewelry:", error);
+                        alert("An error occurred while saving the Jewelry.");
+                    }
+                });
+            });
+        });
+
+
+        function search() {
+
+            var tmp1 = $('#searchInputName').val().trim();
+
+
+
+            if (tmp1 === '') {
+                loadData();
+            } else {
+                $.ajax({
+                    url: '@Url.Action("Search", "Jewelry")',
+                    type: "GET",
+                    data: { search: tmp1 },
+                    contentType: "application/json;charset=utf-8",
+                    dataType: "json",
+                    success: function (result) {
+                        var html = '';
+                        $.each(result, function (key, item) {
+                            html += '<tr>';
+                            html += '<td>' + item.jewelryId + '</td>';
+                            html += '<td>' + item.jewelryName + '</td>';
+                            html += '<td>' + item.material + '</td>';
+                            html += '<td>' + item.size + '</td>';
+                            html += '<td>' + item.weight + '</td>';
+                            html += '<td>' + item.customerId + '</td>';
+                            html += '<td>' + item.type + '</td>';
+                            html += '<td>' + item.quantitative + '</td>';
+                            html += '<td>' + item.description + '</td>';
+                            html += '<td>' + item.status + '</td>';
+
+                            html += '<td>' + "" + '</td>';
+                            html += '<td><button type="button" class="btn btn-primary" onclick="detailsJewelry(' + item.jewelryId + ')">Details</button></td>';
+                            html += '<td><button type="button" class="btn btn-primary" onclick="editJewelry(' + item.jewelryId + ')">Edit</button></td>';
+                            html += '<td><button type="button" class="btn btn-danger" onclick="deleteJewelry(' + item.jewelryId + ')">Delete</button></td>';
+                            html += '</tr>';
+                        });
+                        $('.tblJewelryList').html(html);
+                    },
+                    error: function (xhr, error) {
+                        alert(xhr.statusText);
+                    }
+                });
+            }
+        }
+        
+        /*
+        function loadData() {
+            $.ajax({
+                url: '@Url.Action("GetAll", "Jewelry")',
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                success: function (result) {
+                    var html = '';
+                    $.each(result, function (key, item) {
+                        html += '<tr>';
+                        html += '<td>' + item.jewelryId + '</td>';
+                        html += '<td>' + item.jewelryName + '</td>';
+                        html += '<td>' + item.material + '</td>';
+                        html += '<td>' + item.size + '</td>';
+                        html += '<td>' + item.weight + '</td>';
+                        html += '<td>' + item.customerId + '</td>';
+                        html += '<td>' + item.type + '</td>';
+                        html += '<td>' + item.quantitative + '</td>';
+                        html += '<td>' + item.description + '</td>';
+                        html += '<td>' + item.status + '</td>';
+                        html += '<td>' + "" + '</td>';
+
+                        html += '<td><button type="button" class="btn btn-primary" onclick="detailsJewelry(' + item.jewelryId + ')">Detail</button></td>';
+                        html += '<td><button type="button" class="btn btn-primary" onclick="editJewelry(' + item.jewelryId + ')">Edit</button></td>';
+                        html += '<td><button type="button" class="btn btn-danger" onclick="deleteJewelry(' + item.jewelryId + ')">Delete</button></td>';
+                        html += '</tr>';
+                    });
+                    $('.tblJewelryList').html(html);
+                },
+                error: function (xhr, error) {
+                    alert(xhr.statusText);
+                }
+            });
+        }
+        */
+
+        var totalPages;
+
+        function loadData(pageNumber = 1, pageSize = 3) {
+            $.ajax({
+                url: '@Url.Action("GetPaged", "Jewelry")',
+                type: "GET",
+                contentType: "application/json;charset=utf-8",
+                dataType: "json",
+                data: {
+                    pageNumber: pageNumber,
+                    pageSize: pageSize
+                },
+                success: function (result) {
+                    var html = '';
+                    //Update totalPages
+                    totalPages = result.totalPages;
+
+                    $.each(result.data, function (key, item) {
+                        html += '<tr>';
+                        html += '<td>' + item.jewelryId + '</td>';
+                        html += '<td>' + item.jewelryName + '</td>';
+                        html += '<td>' + item.material + '</td>';
+                        html += '<td>' + item.size + '</td>';
+                        html += '<td>' + item.weight + '</td>';
+                        html += '<td>' + item.customerId + '</td>';
+                        html += '<td>' + item.type + '</td>';
+                        html += '<td>' + item.quantitative + '</td>';
+                        html += '<td>' + item.description + '</td>';
+                        html += '<td>' + item.status + '</td>';
+                        html += '<td>' + "" + '</td>';
+
+                        html += '<td><button type="button" class="btn btn-primary" onclick="detailsJewelry(' + item.jewelryId + ')">Detail</button></td>';
+                        html += '<td><button type="button" class="btn btn-primary" onclick="editJewelry(' + item.jewelryId + ')">Edit</button></td>';
+                        html += '<td><button type="button" class="btn btn-danger" onclick="deleteJewelry(' + item.jewelryId + ')">Delete</button></td>';
+                        html += '</tr>';
+                    });
+                    $('.tblJewelryList').html(html);
+
+                    // Update pagination
+                    var paginationHtml = '';
+                    if (result.currentPage > 1) {
+                        paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(1,' + result.pageSize + ')">&laquo;&laquo;</a></li>';
+                        paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(' + (result.currentPage - 1) + ',' + result.pageSize + ')">&laquo;</a></li>';
+                    }
+
+                    // Show the first page
+                    paginationHtml += '<li class="page-item ' + (result.currentPage == 1 ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(1,' + result.pageSize + ')">1</a></li>';
+
+                    if (result.totalPages > 1) {
+                        if (result.totalPages <= 3) {
+                            // Show all pages if total pages <= 3
+                            for (var i = 2; i <= result.totalPages; i++) {
+                                paginationHtml += '<li class="page-item ' + (result.currentPage == i ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(' + i + ',' + result.pageSize + ')">' + i + '</a></li>';
+                            }
+                        } else {
+                            // Show the first three pages and ellipsis if total pages > 3
+                            paginationHtml += '<li class="page-item ' + (result.currentPage == 2 ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(2,' + result.pageSize + ')">2</a></li>';
+                            paginationHtml += '<li class="page-item ' + (result.currentPage == 3 ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(3,' + result.pageSize + ')">3</a></li>';
+
+                            // Logic to display ellipsis and current page in the middle
+                            if (result.currentPage > 3 && result.currentPage < result.totalPages - 2) {
+                                paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                                paginationHtml += '<li class="page-item active"><a class="page-link" href="#">' + result.currentPage + '</a></li>';
+                                paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                            } else if (result.currentPage >= result.totalPages - 2) {
+                                paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                                for (var i = result.totalPages - 2; i < result.totalPages; i++) {
+                                    paginationHtml += '<li class="page-item ' + (result.currentPage == i ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(' + i + ',' + result.pageSize + ')">' + i + '</a></li>';
+                                }
+                            } else if (result.totalPages > 3) {
+                                paginationHtml += '<li class="page-item disabled"><a class="page-link" href="#">...</a></li>';
+                            }
+
+                            // Always show last page if total number of pages > 3
+                            if (result.totalPages > 3) {
+                                paginationHtml += '<li class="page-item ' + (result.currentPage == result.totalPages ? 'active' : '') + '"><a class="page-link" href="#" onclick="loadData(' + result.totalPages + ',' + result.pageSize + ')">' + result.totalPages + '</a></li>';
+                            }
+                        }
+                    }
+
+                    if (result.currentPage < result.totalPages) {
+                        paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(' + (result.currentPage + 1) + ',' + result.pageSize + ')">&raquo;</a></li>';
+                        paginationHtml += '<li class="page-item"><a class="page-link" href="#" onclick="loadData(' + result.totalPages + ',' + result.pageSize + ')">&raquo;&raquo;</a></li>';
+                    }
+
+                    $('.pagination').html(paginationHtml);
+                },
+                error: function (xhr, error) {
+                    alert(xhr.statusText);
+                }
+            });
+        }
+
+        function goToPage() {
+            var pageNumber = parseInt($('#pageNumberInput').val());
+            var pageSize = 3;
+            if (isNaN(pageNumber) || pageNumber < 1 || pageNumber > totalPages) {
+                alert('Please enter a valid page number.');
+            } else {
+                loadData(pageNumber, pageSize);
+            }
+        }
+
+       
+
+        function add() {
+            action = "Create"; // Đặt hành động là tạo mới
+            $("#jewelryId").val(0); // Đặt ID của thanh toán là 0
+            $('#frm')[0].reset(); // Đặt lại form
+            $('#topUpModalLabel').html("Add New Jewelry"); // Đặt lại tiêu đề modal
+            $('#btSave').html("Save"); // Đặt lại văn bản của nút "Save"
+            $('#topUpModal').modal('show'); // Hiển thị modal
+        }
+
+        function editJewelry(JewelryId) {
+            action = "Update"; // Đặt hành động là cập nhật
+            $.ajax({
+                url: '@Url.Action("GetJewelryById", "Jewelry")' + '?jewelryId=' + JewelryId,
+                type: "GET",
+                contentType: 'application/json',
+                success: function (result) {
+                    $('#jewelryId').val(result.jewelryId);
+                    $('#jewelryName').val(result.jewelryName);
+                    $('#material').val(result.material);
+                    $('#size').val(result.size);
+                    $('#weight').val(result.weight);
+                    $('#customerId').val(result.customerId);
+                    $('#pictureData').val(result.pictureData);
+                    $('#type').val(result.type);
+                    $('#quantitative').val(result.quantitative);
+                    $('#description').val(result.description);
+                    $('#status').val(result.status);
+
+                    $('#topUpModalLabel').html("Edit Jewelry"); // Đặt lại tiêu đề modal
+                    $('#btSave').html("Save"); // Đặt lại văn bản của nút "Save"
+                    $('#topUpModal').modal('show'); // Hiển thị modal
+                },
+                error: function (xhr, status, error) {
+                    console.error("An error occurred while fetching Jewelrys details:", error);
+                    alert("An error occurred while fetching Jewelrys details.");
+                }
+            });
+        }
+        function detailsJewelry(JewelryId) {
+
+            $.ajax({
+                url: '@Url.Action("GetJewelryById", "Jewelry")' + '?jewelryId=' + JewelryId,
+                type: "GET",
+                contentType: 'application/json',
+                success: function (result) {
+                    $('#jewelryId2').val(result.jewelryId);
+                    $('#jewelryName2').val(result.jewelryName);
+                    $('#material2').val(result.material);
+                    $('#size2').val(result.size);
+                    $('#weight2').val(result.weight);
+                    $('#customerId2').val(result.customerId);
+                    $('#pictureData2').val(result.pictureData);
+                    $('#type2').val(result.type);
+                    $('#quantitative2').val(result.quantitative);
+                    $('#description2').val(result.description);
+                    $('#status2').val(result.status);
+
+                    $('#topUpModalLabelDetail').html("Detail Jewelry"); // Đặt lại tiêu đề modal
+                    $('#topUpModalDetail').modal('show'); // Hiển thị modal
+                },
+                error: function (xhr, status, error) {
+                    console.error("An error occurred while fetching Jewelrys details:", error);
+                    alert("An error occurred while fetching Jewelrys details.");
+                }
+            });
+        }
+
+        function deleteJewelry(JewelryId) {
+            if (confirm('Are you sure you want to delete this Jewelry?')) {
+                $.ajax({
+                    type: 'DELETE',
+                    url: '@Url.Action("Delete", "Jewelry")' + '?jewelryId=' + JewelryId,
+                    contentType: 'application/json',
+                    success: function (result) {
+                        if (result.status === 1) {
+                            loadData();
+                        }
+                        alert(result.message);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error("An error occurred while deleting the Jewelry:", error);
+                        alert("An error occurred while deleting the Jewelry.");
+                    }
+                });
+            }
+        }
+
+        
+    </script>
+}
